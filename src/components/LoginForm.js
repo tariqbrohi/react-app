@@ -1,11 +1,23 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import auth from '../api/axios';
 import '../css/form.css';
 class LoginForm extends React.Component {
+    async UNSAFE_componentWillMount() {
+        const responce = await auth.get("/api/token/verify", {
+            params:{
+                token: localStorage.getItem("logedIn")
+            }
+        });
+        if(responce.status === 200) {
+            window.location = "/dashbord";
+        }
+
+    }
     constructor(props) {
         super(props);
         this.state = { userName: "", password: "" };
-    } 
+    }
     onUserNameChange = (e) => {
         this.setState({ userName: e.target.value });
     }
@@ -13,7 +25,7 @@ class LoginForm extends React.Component {
         this.setState({ password: e.target.value });
     }
 
-    onLogin = async (e)  => {
+    onLogin = async (e) => {
         e.preventDefault();
         const responce = await auth.get('/login', {
             params: {
@@ -21,10 +33,14 @@ class LoginForm extends React.Component {
                 password: this.state.password
             }
         });
-        if(responce.data.length > 0) {
+        console.log(responce);
+        if (responce.data === -1) {
+            console.log("User does not exist");
+        } 
+        else if (responce.data.length > 0) {
             console.log("login success");
         } else {
-            console.log("Login failed!!!");
+            console.log("Invalid Password!!!");
         }
     }
     render() {
@@ -45,6 +61,7 @@ class LoginForm extends React.Component {
                         </div>
                     </div>
                     <button type="submit" className="btn btn-primary" onClick={this.onLogin}>Login</button>
+                    <Link to="/register" className="btn btn-primary">SignUp</Link>
                 </form>
             </div>
         );
